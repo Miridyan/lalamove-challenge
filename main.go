@@ -25,13 +25,17 @@ func main() {
 	ctx := context.Background()
 	opt := &github.ListOptions{PerPage: 10}
 	releases, _, err := client.Repositories.ListReleases(ctx, "kubernetes", "kubernetes", opt)
+
 	if err != nil {
 		panic(err) // is this really a good way?
 	}
+
 	minVersion := semver.New("1.8.0")
 	allReleases := make([]*semver.Version, len(releases))
+
 	for i, release := range releases {
 		versionString := *release.TagName
+
 		if versionString[0] == 'v' {
 			versionString = versionString[1:]
 		}
