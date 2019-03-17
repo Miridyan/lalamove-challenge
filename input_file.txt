@@ -1,1 +1,2 @@
-hello  this  is  dog
+kubernetes/kubernetes,1.8.0
+prometheus/prometheus,2.2.0
