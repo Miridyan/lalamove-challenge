@@ -5,33 +5,11 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"sort"
 	"strings"
 
 	"github.com/coreos/go-semver/semver"
 	"github.com/google/go-github/github"
 )
-
-// Versions is alias for []*semver.Version
-type Versions []*semver.Version
-
-func (v Versions) Len() int {
-	return len(v)
-}
-
-func (v Versions) Swap(i, j int) {
-	v[i], v[j] = v[j], v[i]
-}
-
-func (v Versions) Less(i, j int) bool {
-	return v[j].LessThan(*v[i])
-}
-
-// Sort an array of *semver.Version. This is a reimplementation of the semver sort method included to sort in descending order. Ideally I'd like to use
-// sort.Reverse method as a part of the sort library, but that isn't provided.
-func Sort(versions []*semver.Version) {
-	sort.Sort(Versions(versions))
-}
 
 // Repo is a struct to represent each repository parsed from the input file. The path will have the format `user/repo` to append to the end of the
 // github URL and the min version is just a semver Version struct
@@ -42,14 +20,24 @@ type Repo struct {
 
 // LatestVersions returns a sorted slice with the highest version as its first element and the highest version of the smaller minor versions in a descending order
 func LatestVersions(releases []*semver.Version, minVersion *semver.Version) []*semver.Version {
-	var versionSlice []*semver.Version
-	for _, release := range releases {
-		if minVersion.LessThan(*release) {
-			versionSlice = append(versionSlice, release)
+	sortedReleases := make([]*semver.Version, len(releases))
+	copy(sortedReleases, releases)
+	semver.Sort(sortedReleases)
+
+	versionSlice := []*semver.Version{sortedReleases[len(sortedReleases)-1]}
+	curMaj := sortedReleases[len(sortedReleases)-1].Major
+	curMin := sortedReleases[len(sortedReleases)-1].Minor
+
+	for i := len(sortedReleases) - 1; i >= 0; i-- {
+		if i > 0 {
+			if sortedReleases[i-1].Major < curMaj || sortedReleases[i-1].Minor < curMin {
+				if minVersion.LessThan(*sortedReleases[i-1]) {
+					versionSlice = append(versionSlice, sortedReleases[i-1])
+				}
+				curMaj = sortedReleases[i-1].Major
+				curMin = sortedReleases[i-1].Minor
+			}
 		}
-	}
-	if len(versionSlice) >= 2 {
-		Sort(versionSlice)
 	}
 	return versionSlice
 }
