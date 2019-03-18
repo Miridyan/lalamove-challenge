@@ -25,18 +25,12 @@ func LatestVersions(releases []*semver.Version, minVersion *semver.Version) []*s
 	semver.Sort(sortedReleases)
 
 	versionSlice := []*semver.Version{sortedReleases[len(sortedReleases)-1]}
-	curMaj := sortedReleases[len(sortedReleases)-1].Major
-	curMin := sortedReleases[len(sortedReleases)-1].Minor
 
-	for i := len(sortedReleases) - 1; i >= 0; i-- {
-		if i > 0 {
-			if sortedReleases[i-1].Major < curMaj || sortedReleases[i-1].Minor < curMin {
-				if minVersion.LessThan(*sortedReleases[i-1]) {
-					versionSlice = append(versionSlice, sortedReleases[i-1])
-				}
-				curMaj = sortedReleases[i-1].Major
-				curMin = sortedReleases[i-1].Minor
-			}
+	for i := len(sortedReleases) - 2; i >= 0; i-- {
+		if (sortedReleases[i].Major < sortedReleases[i+1].Major || sortedReleases[i].Minor < sortedReleases[i+1].Minor) &&
+			minVersion.LessThan(*sortedReleases[i]) {
+
+			versionSlice = append(versionSlice, sortedReleases[i])
 		}
 	}
 	return versionSlice
