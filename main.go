@@ -31,8 +31,7 @@ func LatestVersions(releases []*semver.Version, minVersion *semver.Version) []*s
 	copy(sortedReleases, releases)
 	semver.Sort(sortedReleases)
 
-	// Iterate along the slice backwards and add some element to `versionSlice` if the element that comes after it has a greater
-	// major or minor version, but only if that element is greater than `minVersion`.
+	// Iterate along the slice backwards and add some element to `versionSlice`.
 	for i := len(sortedReleases) - 1; i >= 0; i-- {
 		// The following if statements could be reduced in number, but I believe that this
 		// formatting is more legible and makes the conditions more easily understood.
@@ -65,8 +64,7 @@ func ParseFile(path string) []Repo {
 	// convert it to an intermediate slice of {"user", "repository", "minVersion", ...}
 	intermediate := strings.FieldsFunc(string(data), func(r rune) bool {
 		return r == '\n' || r == ',' || r == '/'
-	})
-	intermediate = intermediate[2:]
+	})[2:]
 
 	// Since the intermediate slice has 3 elements that should correspond to a single `Repo` struct, the size of the `fileSlice` slice
 	// will be 1/3rd the size of the intermediate slice. Populate each `Repo` struct with the entries from intermediate array.
@@ -88,7 +86,6 @@ func ParseFile(path string) []Repo {
 			MinVersion: semver.New(intermediate[i+2]),
 		}
 	}
-
 	return fileSlice
 }
 
@@ -111,13 +108,12 @@ func main() {
 	// Github
 	client := github.NewClient(nil)
 	ctx := context.Background()
-	opt := &github.ListOptions{PerPage: 500}
+	opt := &github.ListOptions{PerPage: 50}
 
 	for _, repo := range repos {
 		releases, _, err := client.Repositories.ListReleases(ctx, repo.Path[0], repo.Path[1], opt)
 
 		if err != nil {
-			// panic(err) // is this really a good way?
 			fmt.Println("[Github Repository Error]", err)
 			return
 		}
