@@ -33,8 +33,9 @@ func LatestVersions(releases []*semver.Version, minVersion *semver.Version) []*s
 
 	// Iterate along the slice backwards and add some element to `versionSlice`.
 	for i := len(sortedReleases) - 1; i >= 0; i-- {
-		// The following if statements could be reduced in number, but I believe that this
-		// formatting is more legible and makes the conditions more easily understood.
+		// The following if statements could be reduced in number, but I believe that this formatting is more legible and makes the conditions
+		// more easily understood. I should also probably mention that the README did not specify whether or not `minVersion` should be
+		// inclusive or exclusive, so I made it inclusive
 		if !sortedReleases[i].LessThan(*minVersion) && len(sortedReleases[i].PreRelease) == 0 {
 			// If `versionSlice` has nothing in it then it whatever is currently selected must be the greatest
 			// version of some release. If the currently selected element has a lesser major or minor version
