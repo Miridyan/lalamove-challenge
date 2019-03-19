@@ -31,8 +31,6 @@ func LatestVersions(releases []*semver.Version, minVersion *semver.Version) []*s
 	copy(sortedReleases, releases)
 	semver.Sort(sortedReleases)
 
-	fmt.Println(sortedReleases)
-
 	// Iterate along the slice backwards and add some element to `versionSlice` if the element that comes after it has a greater
 	// major or minor version, but only if that element is greater than `minVersion`.
 	for i := len(sortedReleases) - 1; i >= 0; i-- {
