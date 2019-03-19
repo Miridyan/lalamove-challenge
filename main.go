@@ -20,15 +20,23 @@ type Repo struct {
 
 // LatestVersions returns a sorted slice with the highest version as its first element and the highest version of the smaller minor versions in a descending order
 func LatestVersions(releases []*semver.Version, minVersion *semver.Version) []*semver.Version {
+	// Instead of creating a new slice identical to the input and sorting it, I could just sort the input array to save time, however
+	// I feel that this is the wrong choice because that would modify data outside of the function. Although this program is simple
+	// and this isn't really an issue, I feel that it is best that all mutations that occur within a function should be isolated to it
+	// in order to mitigate side effects.
 	sortedReleases := make([]*semver.Version, len(releases))
 	copy(sortedReleases, releases)
 	semver.Sort(sortedReleases)
 
+	// Initialize `versionSlice` with the final element of sortedReleases because it is guarenteed that last element of the sorted array
+	// will be the latest release of some version.
 	versionSlice := []*semver.Version{sortedReleases[len(sortedReleases)-1]}
 
+	// Iterate along the slice backwards and add some element to `versionSlice` if the element that comes after it has a greater
+	// major or minor version, but only if that element is greater than `minVersion`.
 	for i := len(sortedReleases) - 2; i >= 0; i-- {
 		if (sortedReleases[i].Major < sortedReleases[i+1].Major || sortedReleases[i].Minor < sortedReleases[i+1].Minor) &&
-			minVersion.LessThan(*sortedReleases[i]) {
+			!sortedReleases[i].LessThan(*minVersion) {
 
 			versionSlice = append(versionSlice, sortedReleases[i])
 		}
